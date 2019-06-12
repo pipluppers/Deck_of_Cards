@@ -22,6 +22,8 @@ private:
 public:
 	Deck();
 	Deck(int);		// Deck with variable size
+	Deck(Deck&);
+	~Deck();
 
 	void displayDeck() const;
 	int currentSize() const;
@@ -34,9 +36,12 @@ public:
 	void addCardtoLoc(Card, int);
 	void fullempty();					// Change the size and current size to 0
 	void empty();						// Change only the current size to 0
+	void reset();						// Start with a fresh 52-card deck
 
 	Deck& operator=(const Deck&);
+	friend std::ostream& operator<<(std::ostream& out, const Deck&);
 };
 
 //	Games
 void Solitaire();
+void BlackJack();
