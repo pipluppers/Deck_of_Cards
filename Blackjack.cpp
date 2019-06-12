@@ -6,7 +6,7 @@ int sumHand(Deck);			// Sum of hand
 
 void BlackJack() {
 	if (!confirmPlay()) {
-		std::cout << "Exiting blackjack\n";
+		std::cout << "Exiting BlackJack\n";
 		return;
 	}
 
@@ -18,7 +18,7 @@ void BlackJack() {
 bool confirmPlay() {
 	std::string ans;
 
-	std::cout << "Ready to play Blackjack? (y/n)\n";
+	std::cout << "Ready to play BlackJack? (y/n)\n";
 	std::cin >> ans;
 	while (ans != "y" && ans != "Y" && ans != "n" && ans != "N") {
 		std::cout << "Invalid response. Please enter y or n: ";
