@@ -2,11 +2,8 @@
 
 /*
 	TODO
-
+	Fix the functionality for drawing a single card
 */
-
-
-
 
 std::string playornotplay();
 std::string fetchplaystyle();		//	Draw 1 or 3 cards at a time
@@ -15,6 +12,8 @@ void play(std::string);
 bool move(Deck&, Deck&, Deck&, Deck&, Deck&, Deck&, Deck&, Deck&, Deck&, Deck&, Deck&, Deck&, Deck&);
 bool validMove(Deck*, Deck*, int);	//	The integer is used to determine dest (foundation or not)	
 void displayGameState(Deck, Deck, Deck, Deck, Deck, Deck, Deck, Deck, Deck, Deck, Deck, Deck, Deck);
+
+
 
 void Solitaire() {
 	std::string toplay = playornotplay();
@@ -40,7 +39,7 @@ void Solitaire() {
 
 std::string playornotplay() {
 	std::string ch;
-	std::cout << "Ready to play? (y/n)\n";
+	std::cout << "Ready to play Solitaire? (y/n)\n";
 	std::cin >> ch;
 	while (ch != "y" && ch != "n" && ch != "Y" && ch != "N") {
 		std::cout << "Invalid response. Please enter y or n: ";
@@ -122,7 +121,6 @@ void play(std::string ps) {
 	std::string action;
 
 	displayGameState(d, hand, one, two, three, four, five, six, seven, spades, clubs, diamonds, hearts);
-	return;
 
 	while (spades.currentSize() < 13 && clubs.currentSize() < 13 &&
 		diamonds.currentSize() < 13 && hearts.currentSize() < 13) {
@@ -275,7 +273,7 @@ bool validMove(Deck* choice1, Deck* choice2, int foundation) {
 	if (foundation == 0) {
 		//	Choice1 is King and Choice2 is empty
 		if (choice2->currentSize() == 0 && choice1->checkCard(0).num == 12) {
-			choice2->addCardtoFront(choice1->takeCard(0));
+			choice2->addCardtoFront(choice1->takeCard(1));
 			return true;
 		}
 		//	Choice1 is not King and Choice2 is empty
@@ -295,7 +293,7 @@ bool validMove(Deck* choice1, Deck* choice2, int foundation) {
 
 		//	Choice1 is 1 smaller than Choice2
 		if (choice1->checkCard(0).num == choice2->checkCard(0).num - 1) {
-			choice2->addCardtoFront(choice1->takeCard(0));
+			choice2->addCardtoFront(choice1->takeCard(1));
 			return true;
 		}
 		//	Choice1 is not 1 smaller than Choice2
@@ -310,12 +308,12 @@ bool validMove(Deck* choice1, Deck* choice2, int foundation) {
 		else if (foundation == 4 && choice1->checkCard(0).suit != 3) return false;
 
 		if (choice2->currentSize() == 0 && choice1->checkCard(0).num == 0) {
-			choice2->addCardtoFront(choice1->takeCard(0));
+			choice2->addCardtoFront(choice1->takeCard(1));
 			return true;
 		}
 		if (choice2->currentSize() == 0 && choice1->checkCard(0).num != 0) return false;
 		if (choice1->checkCard(0).num == choice2->checkCard(0).num + 1) {
-			choice2->addCardtoFront(choice1->takeCard(0));
+			choice2->addCardtoFront(choice1->takeCard(1));
 			return true;
 		}
 		else if (choice1->checkCard(0).num != choice2->checkCard(0).num + 1) return false;
@@ -328,33 +326,33 @@ void displayGameState(Deck d, Deck hand, Deck one, Deck two, Deck three, Deck fo
 	Deck spades, Deck clubs, Deck diamonds, Deck hearts) {
 
 	std::cout << "Deck\t\thand\t\t\tSpades\tClubs\tDiamonds\tHearts\n";
-	if (d.currentSize() > 0) std::cout << d.checkCard(0) << "\t";
+	if (d.currentSize() > 0) std::cout << d.checkCard(1) << "\t";
 	else std::cout << "\t\t";
-	if (hand.currentSize() > 0) std::cout << hand.checkCard(0) << "\t";
+	if (hand.currentSize() > 0) std::cout << hand.checkCard(1) << "\t";
 	else std::cout << "\t\t";
-	if (spades.currentSize() > 0) std::cout << spades.checkCard(0) << "\t";
+	if (spades.currentSize() > 0) std::cout << spades.checkCard(1) << "\t";
 	else std::cout << "\t\t";
-	if (clubs.currentSize() > 0) std::cout << clubs.checkCard(0) << "\t";
+	if (clubs.currentSize() > 0) std::cout << clubs.checkCard(1) << "\t";
 	else std::cout << "\t\t";
-	if (diamonds.currentSize() > 0) std::cout << diamonds.checkCard(0) << "\t";
+	if (diamonds.currentSize() > 0) std::cout << diamonds.checkCard(1) << "\t";
 	else std::cout << "\t\t";
-	if (hearts.currentSize() > 0) std::cout << hearts.checkCard(0) << "\t";
+	if (hearts.currentSize() > 0) std::cout << hearts.checkCard(1) << "\t";
 	else std::cout << "\t\t";
 
 	std::cout << "\n\n";
 	std::cout << "One\t\tTwo\t\tThree\t\tFour\t\tFive\t\tSix\t\tSeven\n";
-	if (one.currentSize() > 0) std::cout << one.checkCard(0) << "\t";
+	if (one.currentSize() > 0) std::cout << one.checkCard(1) << "\t\t";
 	else std::cout << "\t\t";
-	if (two.currentSize() > 0) std::cout << two.checkCard(0) << "\t";
+	if (two.currentSize() > 0) std::cout << two.checkCard(1) << "\t";
 	else std::cout << "\t\t";
-	if (three.currentSize() > 0) std::cout << three.checkCard(0) << "\t";
+	if (three.currentSize() > 0) std::cout << three.checkCard(1) << "\t";
 	else std::cout << "\t\t";
-	if (four.currentSize() > 0) std::cout << four.checkCard(0) << "\t";
+	if (four.currentSize() > 0) std::cout << four.checkCard(1) << "\t";
 	else std::cout << "\t\t";
-	if (five.currentSize() > 0) std::cout << five.checkCard(0) << "\t";
+	if (five.currentSize() > 0) std::cout << five.checkCard(1) << "\t";
 	else std::cout << "\t\t";
-	if (six.currentSize() > 0) std::cout << six.checkCard(0) << "\t";
+	if (six.currentSize() > 0) std::cout << six.checkCard(1) << "\t";
 	else std::cout << "\t\t";
-	if (seven.currentSize() > 0) std::cout << seven.checkCard(0) << "\t";
+	if (seven.currentSize() > 0) std::cout << seven.checkCard(1) << "\t";
 	else std::cout << "\t\t";
 }
