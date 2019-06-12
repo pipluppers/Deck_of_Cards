@@ -1,4 +1,4 @@
-# Random
+# Deck of playing cards
 
 A general deck of cards contains a total of 4 suits and a total of 13 numbers (Ace, 2-10, Jack, Queen, King) for a grand total of 52 cards. This program has functionality to create a deck of varying size. Deck functions include:
 - Shuffling
