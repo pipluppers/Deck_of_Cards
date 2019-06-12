@@ -1,5 +1,6 @@
 #include "Deck.h"
 
+//	Does NOT output a newline at the end
 std::ostream& operator<<(std::ostream& out, const Card& c) {
 	assert(c.num >= 0);			// No negative cards
 
@@ -14,11 +15,21 @@ std::ostream& operator<<(std::ostream& out, const Card& c) {
 	else if (c.num == 11) out << "Queen\n";
 	else if (c.num == 12) out << "King\n";
 	else if (c.num == 13) out << "Joker\n";
-	else out << c.num + 1 << "\n";
+	else out << c.num + 1;
 
 	return out;
 }
 
+//	Does output a newline at the end
+std::ostream& operator<<(std::ostream& out, const Deck& d) {
+	int i;
+	for (i = 0; i < d.current_size; ++i) {
+		out << d.deck[i] << std::endl;
+	}
+	return out;
+}
+
+//	Default constructor
 Deck::Deck() {
 	int i = 0, j = 0;
 	this->size = 52, this->current_size = 52;
@@ -30,19 +41,59 @@ Deck::Deck() {
 	}
 }
 
+//	Integer Constructor
 Deck::Deck(int size) {
 	this->size = size;
 	this->current_size = size;
 	deck = new Card[size];
 	int i = 0, j = 0;
-	while (i * 4 + j < size) {
-		for (; i < 13 && i*4 < size; ++i) {
-			for (j = 0; j < 4 && i*4+j < size; ++j) {
+	while (i * 4 + j < size) {							//	While loop is for sizes above 52
+		for (; i < 13 && i*4 + j < size; ++i) {			//	This loop is for the numbers
+			for (j = 0; j < 4 && i*4+j < size; ++j) {	//	This loop is for the suits
 				deck[i * 4 + j] = Card(i, j);
 			}
 		}
 	}
 }
+
+//	Copy Constructor
+Deck::Deck(Deck& d) {
+	this->size = d.size;
+	this->current_size = d.current_size;
+	this->deck = new Card[this->size];
+	int i = 0;
+	for (; i < d.current_size; ++i) {
+		this->deck[i] = d.deck[i];
+	}
+}
+
+//	Destructor
+Deck::~Deck() {
+	if (this->deck != 0) delete[] this->deck;
+}
+
+//	Copy Assignment Operator
+Deck& Deck::operator=(const Deck& d) {
+	this->size = d.size;
+	this->current_size = d.current_size;
+	delete[] this->deck;
+	deck = new Card[this->size];
+	int i = 0;
+	for (i = 0; i < d.current_size; ++i) {
+		this->deck[i] = d.deck[i];
+	}
+	return *this;
+}
+
+
+
+
+
+//	---------------	Functions	--------------------------------
+
+
+
+
 
 int Deck::currentSize() const {
 	return this->current_size;
@@ -105,6 +156,11 @@ void Deck::shuffle(int num) {
 		- Index to check
 	Process:
 		- If index is out of range, exit
+
+		!!!!!!!!!!!!!!!!!
+		- IMPORTANT. INDEX MUST RANGE FROM 1 to CURRENT_SIZE, NOT 0 to CURRENT_SIZE - 1. THIS HELPS FOR DISPLAY FUNCTIONS !!!!!!
+		!!!!!!!!!!!!!!!!!
+
 		- Calling function should have a check for this default card
 	Output:
 		- Card
@@ -121,6 +177,11 @@ Card Deck::checkCard(int index) const {
 		- Index to check
 	Process:
 		- If index is out of range, exit
+
+		!!!!!!!!!!!!!!!!!
+		- IMPORTANT. INDEX MUST RANGE FROM 1 to CURRENT_SIZE, NOT 0 to CURRENT_SIZE - 1. THIS HELPS FOR DISPLAY FUNCTIONS !!!!!!
+		!!!!!!!!!!!!!!!!!
+		
 		- Store card in temp variable and move everything over
 		- Decrease current size of deck
 	Output:
@@ -228,16 +289,16 @@ void Deck::empty() {
 	this->current_size = 0;
 }
 
-
-
-Deck& Deck::operator=(const Deck& d) {
-	this->size = d.size;
-	this->current_size = d.current_size;
-	delete[] this->deck;
-	deck = new Card[this->size];
-	int i = 0;
-	for (i = 0; i < d.current_size; ++i) {
-		this->deck[i] = d.deck[i];
+void Deck::reset() {
+	std::cout << "Starting with a fresh 52-card deck\n";
+	this->size = 52;
+	this->current_size = 52;
+	int i = 0, j = 0;
+	if (this->deck != 0) delete[] deck;
+	deck = new Card[52];
+	for (; i < 13; ++i) {
+		for (j = 0; j < 4; ++j) {
+			deck[i * 4 + j] = Card(i, j);
+		}
 	}
-	return *this;
 }
