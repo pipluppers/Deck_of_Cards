@@ -71,7 +71,9 @@ void draw(Deck &d, Deck &hand, std::string playstyle) {
 		}
 		//	Reset
 		else {
-			hand.addCardtoFront(d.takeCard(d.currentSize()));
+			if (hand.addCardtoFront(d.takeEndCard())) {
+				std::cout << "Error adding card to hand or taking from deck\n";
+			}
 		}
 		std::cout << "Hand:\n";
 		hand.displayDeck();
@@ -88,7 +90,9 @@ void draw(Deck &d, Deck &hand, std::string playstyle) {
 		else {
 			std::cout << "Drawing 3\n";
 			while (count < 3 && d.currentSize() > 0) {
-				hand.addCardtoFront(d.takeCard(d.currentSize()));
+				if (!hand.addCardtoFront(d.takeEndCard())) {
+					std::cout << "Error adding card to front of hand or taking from deck\n";
+				}
 				count++;
 			}
 		}
@@ -109,13 +113,13 @@ void play(std::string ps) {
 
 	spades.empty();	clubs.empty(); diamonds.empty(); hearts.empty();	// Change all current sizes to 0
 	one.empty(); two.empty(); three.empty(); four.empty(); five.empty(); six.empty(); seven.empty();
-	one.addCardtoFront(d.takeCard(d.currentSize()));
-	two.addCardtoFront(d.takeCard(d.currentSize())); two.addCardtoFront(d.takeCard(d.currentSize()));
-	for (i = 0; i < 3; ++i) three.addCardtoFront(d.takeCard(d.currentSize()));
-	for (i = 0; i < 4; ++i) four.addCardtoFront(d.takeCard(d.currentSize()));
-	for (i = 0; i < 5; ++i) five.addCardtoFront(d.takeCard(d.currentSize()));
-	for (i = 0; i < 6; ++i) six.addCardtoFront(d.takeCard(d.currentSize()));
-	for (i = 0; i < 7; ++i) seven.addCardtoFront(d.takeCard(d.currentSize()));
+	one.addCardtoFront(d.takeEndCard());
+	two.addCardtoFront(d.takeEndCard()); two.addCardtoFront(d.takeEndCard());
+	for (i = 0; i < 3; ++i) three.addCardtoFront(d.takeEndCard());
+	for (i = 0; i < 4; ++i) four.addCardtoFront(d.takeEndCard());
+	for (i = 0; i < 5; ++i) five.addCardtoFront(d.takeEndCard());
+	for (i = 0; i < 6; ++i) six.addCardtoFront(d.takeEndCard());
+	for (i = 0; i < 7; ++i) seven.addCardtoFront(d.takeEndCard());
 
 	bool playon = true;
 	std::string action;
@@ -273,7 +277,7 @@ bool validMove(Deck* choice1, Deck* choice2, int foundation) {
 	if (foundation == 0) {
 		//	Choice1 is King and Choice2 is empty
 		if (choice2->currentSize() == 0 && choice1->checkCard(0).num == 12) {
-			choice2->addCardtoFront(choice1->takeCard(1));
+			choice2->addCardtoFront(choice1->takeFrontCard());
 			return true;
 		}
 		//	Choice1 is not King and Choice2 is empty
@@ -293,7 +297,7 @@ bool validMove(Deck* choice1, Deck* choice2, int foundation) {
 
 		//	Choice1 is 1 smaller than Choice2
 		if (choice1->checkCard(0).num == choice2->checkCard(0).num - 1) {
-			choice2->addCardtoFront(choice1->takeCard(1));
+			choice2->addCardtoFront(choice1->takeFrontCard());
 			return true;
 		}
 		//	Choice1 is not 1 smaller than Choice2
@@ -308,12 +312,12 @@ bool validMove(Deck* choice1, Deck* choice2, int foundation) {
 		else if (foundation == 4 && choice1->checkCard(0).suit != 3) return false;
 
 		if (choice2->currentSize() == 0 && choice1->checkCard(0).num == 0) {
-			choice2->addCardtoFront(choice1->takeCard(1));
+			choice2->addCardtoFront(choice1->takeFrontCard());
 			return true;
 		}
 		if (choice2->currentSize() == 0 && choice1->checkCard(0).num != 0) return false;
 		if (choice1->checkCard(0).num == choice2->checkCard(0).num + 1) {
-			choice2->addCardtoFront(choice1->takeCard(1));
+			choice2->addCardtoFront(choice1->takeFrontCard());
 			return true;
 		}
 		else if (choice1->checkCard(0).num != choice2->checkCard(0).num + 1) return false;
@@ -326,33 +330,33 @@ void displayGameState(Deck d, Deck hand, Deck one, Deck two, Deck three, Deck fo
 	Deck spades, Deck clubs, Deck diamonds, Deck hearts) {
 
 	std::cout << "Deck\t\thand\t\t\tSpades\tClubs\tDiamonds\tHearts\n";
-	if (d.currentSize() > 0) std::cout << d.checkCard(1) << "\t";
+	if (d.currentSize() > 0) std::cout << d.checkCard(0) << "\t";
 	else std::cout << "\t\t";
-	if (hand.currentSize() > 0) std::cout << hand.checkCard(1) << "\t";
+	if (hand.currentSize() > 0) std::cout << hand.checkCard(0) << "\t";
 	else std::cout << "\t\t";
-	if (spades.currentSize() > 0) std::cout << spades.checkCard(1) << "\t";
+	if (spades.currentSize() > 0) std::cout << spades.checkCard(0) << "\t";
 	else std::cout << "\t\t";
-	if (clubs.currentSize() > 0) std::cout << clubs.checkCard(1) << "\t";
+	if (clubs.currentSize() > 0) std::cout << clubs.checkCard(0) << "\t";
 	else std::cout << "\t\t";
-	if (diamonds.currentSize() > 0) std::cout << diamonds.checkCard(1) << "\t";
+	if (diamonds.currentSize() > 0) std::cout << diamonds.checkCard(0) << "\t";
 	else std::cout << "\t\t";
-	if (hearts.currentSize() > 0) std::cout << hearts.checkCard(1) << "\t";
+	if (hearts.currentSize() > 0) std::cout << hearts.checkCard(0) << "\t";
 	else std::cout << "\t\t";
 
 	std::cout << "\n\n";
 	std::cout << "One\t\tTwo\t\tThree\t\tFour\t\tFive\t\tSix\t\tSeven\n";
-	if (one.currentSize() > 0) std::cout << one.checkCard(1) << "\t\t";
+	if (one.currentSize() > 0) std::cout << one.checkCard(0) << "\t\t";
 	else std::cout << "\t\t";
-	if (two.currentSize() > 0) std::cout << two.checkCard(1) << "\t";
+	if (two.currentSize() > 0) std::cout << two.checkCard(0) << "\t";
 	else std::cout << "\t\t";
-	if (three.currentSize() > 0) std::cout << three.checkCard(1) << "\t";
+	if (three.currentSize() > 0) std::cout << three.checkCard(0) << "\t";
 	else std::cout << "\t\t";
-	if (four.currentSize() > 0) std::cout << four.checkCard(1) << "\t";
+	if (four.currentSize() > 0) std::cout << four.checkCard(0) << "\t";
 	else std::cout << "\t\t";
-	if (five.currentSize() > 0) std::cout << five.checkCard(1) << "\t";
+	if (five.currentSize() > 0) std::cout << five.checkCard(0) << "\t";
 	else std::cout << "\t\t";
-	if (six.currentSize() > 0) std::cout << six.checkCard(1) << "\t";
+	if (six.currentSize() > 0) std::cout << six.checkCard(0) << "\t";
 	else std::cout << "\t\t";
-	if (seven.currentSize() > 0) std::cout << seven.checkCard(1) << "\t";
+	if (seven.currentSize() > 0) std::cout << seven.checkCard(0) << "\t";
 	else std::cout << "\t\t";
 }
