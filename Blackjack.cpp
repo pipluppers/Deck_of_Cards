@@ -41,23 +41,31 @@ void play() {
 	int sumUser, sumDealer;			// Current sum of the hands
 	int i; bool dealerAce = false;	// True if dealer has ace
 	int gameStatus = PLAYON;		// 0 for game on, 1 for lose, 2 for win
-	bool keepPlaying = true;
 
-	while (keepPlaying) {
+	while (1) {
 		dealerAce = false;
 
-		//	Setup for the first move
-		dealer.addCardtoFront(d.takeCard(d.currentSize()));
-		dealer.addCardtoFront(d.takeCard(d.currentSize()));
-		std::cout << "\nTop of Dealer's deck\n";
-		std::cout << dealer.checkCard(1);		// CheckCard and TakeCard start from 1 to current_size
+		//	Add cards from deck to dealer's hand
+		if (!dealer.addCardtoFront(d.takeEndCard()) || !dealer.addCardtoFront(d.takeEndCard())) {
+			std::cout << "Failed to add cards to dealer or remove card from deck\n";
+		}
+		std::cout << "\nTop of Dealer's hand\n";
+		std::cout << dealer.checkCard(0);
 		std::cout << "\n\n";
-		user.addCardtoFront(d.takeCard(d.currentSize()));
-		user.addCardtoFront(d.takeCard(d.currentSize()));
+		
+		if (!user.addCardtoFront(d.takeEndCard()) || !user.addCardtoFront(d.takeEndCard())) {
+			std::cout << "Failed to add cards to user or remove cards from deck\n";
+		}
+
 		std::cout << "Your hand:\n";
 		std::cout << user << std::flush;
 		sumUser = sumHand(user);
 		std::cout << "Current sum: " << sumUser << "\n\n";
+		
+		//	If User has 21 already, user wins no matter what
+		if (sumUser == 21) {
+			gameStatus = WIN;
+		}
 
 		//	Player Turn
 		while (gameStatus == PLAYON) {
@@ -68,8 +76,8 @@ void play() {
 			}
 			//	HIT
 			if (action == "1") {
-				user.addCardtoFront(d.takeCard(d.currentSize()));
-				std::cout << "You drew " << user.checkCard(1) << "\n";
+				user.addCardtoFront(d.takeEndCard());
+				std::cout << "You drew " << user.checkCard(0) << "\n";
 				sumUser = sumHand(user);
 				std::cout << "Current Sum: " << sumUser << "\n";
 
@@ -83,9 +91,7 @@ void play() {
 				}
 			}
 			//	STAY
-			else {
-				gameStatus = DEALERTURN;
-			}
+			else gameStatus = DEALERTURN;
 		}
 
 		//	Dealer Turn
@@ -96,9 +102,10 @@ void play() {
 
 			i = 0;
 			for (i = 0; i < dealer.currentSize(); ++i) {
-				sumDealer += dealer.checkCard(i + 1).num + 1;		//	The +1's accounts for checkCard and nums starting at 0
-				if (!dealerAce && dealer.checkCard(i + 1).num == 0) dealerAce = true;
+				sumDealer += dealer.checkCard(i).num + 1;
+				if (!dealerAce && dealer.checkCard(i).num == 0) dealerAce = true;
 			}
+			std::cout << "Dealer's current sum: " << sumDealer << "\n";
 
 			while (sumDealer < sumUser && sumDealer < 21) {
 				if (dealerAce && sumDealer == 11) {
@@ -106,19 +113,18 @@ void play() {
 					break;
 				}
 				sumDealer = 0;
-				dealer.addCardtoFront(d.takeCard(d.currentSize()));
-				std::cout << "Dealer drew " << dealer.checkCard(1) << "\n";
+				dealer.addCardtoFront(d.takeEndCard());
+				std::cout << "Dealer drew " << dealer.checkCard(0) << "\n";
 				for (i = 0; i < dealer.currentSize(); ++i) {
-					if (dealer.checkCard(i + 1).num > 9) {
+					if (dealer.checkCard(i).num > 9) {
 						sumDealer += 10;		// FACE CARD
 					}
 					else {
-						sumDealer += dealer.checkCard(i + 1).num + 1;		//	The +1's accounts for checkCard and nums starting at 0
-						if (!dealerAce && dealer.checkCard(i + 1).num == 0) dealerAce = true;
+						sumDealer += dealer.checkCard(i).num + 1;
+						if (!dealerAce && dealer.checkCard(i).num == 0) dealerAce = true;
 					}
 				}
 				std::cout << "Dealer's current sum: " << sumDealer << "\n";
-
 			}
 			if (sumDealer > 21) {
 				gameStatus = WIN;	// Player wins
@@ -141,7 +147,6 @@ void play() {
 				std::cin >> action;
 			}
 			if (action == "N" || action == "n") {
-				keepPlaying = false;	// not really necessary but whatever
 				return;
 			}
 			else {
@@ -164,7 +169,6 @@ void play() {
 		}
 	}
 
-
 	return;
 }
 
@@ -174,7 +178,7 @@ int sumHand(Deck d) {
 
 	for (; i < d.currentSize(); ++i) {
 		//	If ACE
-		if (d.checkCard(i + 1).num == 0) {
+		if (d.checkCard(i).num == 0) {
 			while (ans != "1" && ans != "2") {
 				std::cout << "Do you want this ace to be worth 1 or 11? (Please enter 1 for 1 and 2 for 11)\n";
 				std::cin >> ans;
@@ -183,11 +187,11 @@ int sumHand(Deck d) {
 			else counter += 11;
 		}
 		else {
-			if (d.checkCard(i + 1).num > 9) {
+			if (d.checkCard(i).num > 9) {
 				counter += 10;
 			}
 			else {
-				counter += d.checkCard(i + 1).num + 1;		//	The +1 accounts for cards starting at 0
+				counter += d.checkCard(i).num + 1;
 			}
 		}
 	}
