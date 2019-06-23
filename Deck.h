@@ -4,42 +4,59 @@
 #include <assert.h>
 #include <ctime>
 
-//enum Suit {spade = 0, club, diamond, heart};
+typedef int Suit;
+constexpr int spade = 0, club = 1, diamond = 2, heart = 3;
 
 struct Card {
 	int num;	// Ace is 0, King is 12
-	int suit;	// Spade 0, Club 1, Diamond 2, Heart 3
-	Card() : num(0), suit(0) {}
-	Card(int num, int suit) : num(num), suit(suit) {}
+	Suit suit;	// Spade 0, Club 1, Diamond 2, Heart 3
+	Card() : num(0), suit(spade) {}
+	Card(int num, Suit suit) : num(num), suit(suit) {}
 	friend std::ostream& operator<<(std::ostream&, const Card&);
 };
 
 class Deck {
-private:
-	Card* deck;		// Last index is the top of the deck. Index 0 is bottom of deck (head face up)
-	int size;		// Can be used for current size (generally 52)
-	int current_size;	// For games, magic tricks, etc.
 public:
 	Deck();
 	Deck(int);		// Deck with variable size
 	Deck(Deck&);
+	Deck& operator=(const Deck&);	// Copy assignment
 	~Deck();
 
-	void displayDeck() const;
 	int currentSize() const;
+	void displayDeck() const;
+	/*
+	O(2*size) space
+	Input:
+		- Number of times to shuffle
+		- If no number is inputted, shuffle 1000 times
+	Process:
+		- Pull random numbers a and b
+		- Move everything from a to b inclusive to the front
+	*/
+	void shuffle(int = 1000);
 
-	void shuffle(int = 100);		// If no number inputted, shuffle 100 times. O(2*size) space
+	//	Checking/Removing Card
 	Card checkCard(int) const;
 	Card takeCard(int);
-	void addCardtoEnd(Card);
-	void addCardtoFront(Card);
-	void addCardtoLoc(Card, int);
+	Card takeFrontCard();
+	Card takeEndCard();
+
+	//	Adding Card
+	bool addCard(Card, int);
+	bool addCardtoEnd(Card);
+	bool addCardtoFront(Card);
+
 	void fullempty();					// Change the size and current size to 0
 	void empty();						// Change only the current size to 0
 	void reset();						// Start with a fresh 52-card deck
 
-	Deck& operator=(const Deck&);
 	friend std::ostream& operator<<(std::ostream& out, const Deck&);
+
+private:
+	Card* deck;		// Last index is the top of the deck. Index 0 is bottom of deck (head face up)
+	int size;		// Can be used for current size (generally 52)
+	int current_size;	// For games, magic tricks, etc.
 };
 
 //	Games
