@@ -54,9 +54,6 @@ public:
 	void fullempty();					// Change the size and current size to 0
 	void empty();						// Change only the current size to 0
 	void reset();						// Start with a fresh 52-card deck
-
-	friend std::ostream& operator<<(std::ostream& out, const Deck&);
-
 private:
 	Card* deck;		// Last index is the top of the deck. Index 0 is bottom of deck (head face up)
 	int size;		// Can be used for current size (generally 52)
@@ -65,4 +62,4 @@ private:
 
 //	Games
 void Solitaire();
-void BlackJack();
+void Blackjack();
