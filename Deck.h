@@ -1,3 +1,5 @@
+//	Property of Alex Nguyen (nguyenalex24@gmail.com)
+
 #pragma once
 #include <iostream>
 #include <cstdlib>
@@ -5,12 +7,12 @@
 #include <ctime>
 
 typedef int Suit;
-constexpr int spade = 0, club = 1, diamond = 2, heart = 3;
+constexpr int SPADE = 0, CLUB = 1, DIAMOND = 2, HEART = 3;
 
 struct Card {
-	int num;	// Ace is 0, King is 12
+	int num;	// Ace is 1, King is 13
 	Suit suit;	// Spade 0, Club 1, Diamond 2, Heart 3
-	Card() : num(0), suit(spade) {}
+	Card() : num(0), suit(SPADE) {}
 	Card(int num, Suit suit) : num(num), suit(suit) {}
 	friend std::ostream& operator<<(std::ostream&, const Card&);
 };
@@ -24,6 +26,8 @@ public:
 	~Deck();
 
 	int currentSize() const;
+	void incrementCurrentSize(int = 1);
+	void incrementSize(int = 1);
 	void displayDeck() const;
 	/*
 	O(2*size) space
