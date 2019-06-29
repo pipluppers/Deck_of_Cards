@@ -11,6 +11,9 @@
 typedef int UserAction;
 constexpr UserAction DRAW = 0, MOVE = 1, QUIT = 2;
 
+enum MoveChoice {ONE = 1, TWO, THREE, FOUR, FIVE, SIX, SEVEN, 
+	FOUNDATION1, FOUNDATION2, FOUNDATION3, FOUNDATION4, MENU, QUIT_MC, INVALID};
+
 bool playAgame();
 std::string fetchplaystyle();		//	Draw 1 or 3 cards at a time
 bool gameOver(Deck&, Deck&, Deck&, Deck&);
@@ -18,7 +21,12 @@ void draw(Deck&, Deck&, std::string); //	Returns the current hand (which is esse
 void play(std::string);
 void prepGame(Deck&, Deck&, Deck&, Deck&, Deck&, Deck&, Deck&, Deck&, Deck&, Deck&, Deck&, Deck&);
 UserAction userAction();
+
 bool move(Deck&, Deck&, Deck&, Deck&, Deck&, Deck&, Deck&, Deck&, Deck&, Deck&, Deck&, Deck&, Deck&);
+MoveChoice move_firstChoice(Deck,Deck,Deck,Deck,Deck,Deck,Deck,Deck,Deck,Deck,Deck);
+MoveChoice move_secondChoice(Deck,Deck,Deck,Deck,Deck,Deck,Deck,Deck,Deck,Deck,Deck,MoveChoice);
+MoveChoice is_equalMoveChoices(MoveChoice, std::string);
+
 bool validMove(Deck*, Deck*, int);	//	The integer is used to determine dest (foundation or not)	
 
 //	This UI is currently super ugly
@@ -42,18 +50,18 @@ void Solitaire() {
 
 bool playAgame() {
 	std::string ch;
-	std::cout << "Ready to play Solitaire?\n - 1: Yes\n - 2: No\n";
+	std::cout << "\nReady to play Solitaire?\n - 1. Yes\n - 2. No\n";
 	std::cin >> ch;
 	while (ch != "1" && ch != "2") {
 		std::cout << "Invalid response. Please enter 1 or 2: ";
 		std::cin >> ch;
 	}
-	return (ch == "y" || ch == "Y");
+	return ch == "1";
 }
 
 std::string fetchplaystyle() {
 	std::string ps;
-	std::cout << "How many cards do you want to draw at a time?\n - 1: 1\n - 2: 3\n";
+	std::cout << "How many cards do you want to draw at a time?\n - 1. Single\n - 2. Triple\n";
 	std::cin >> ps;
 	while (ps != "1" && ps != "2") {
 		std::cout << "Invalid response. Please enter 1 or 2: ";
@@ -72,7 +80,7 @@ void draw(Deck &d, Deck &hand, std::string playstyle) {
 		if (d.currentSize() + hand.currentSize() <= 10) {
 			std::cout << "Cannot draw or reset anymore\n";
 		}
-		else if (d.currentSize() == 0) {
+		else if (d.isEmpty()) {
 			std::cout << "Resetting hand and deck\n";
 			d = hand;
 			hand.empty();
@@ -82,25 +90,26 @@ void draw(Deck &d, Deck &hand, std::string playstyle) {
 			if (!hand.addCardtoFront(d.takeEndCard()))
 				std::cout << "Error drawing card\n";
 		}
-		std::cout << "Hand:\n" << hand << std::endl;
+		std::cout << "\tYour hand:\n";
+		hand.displayDeck();
 	}
 	else {
 		int count = 0;
 		//	Reset
-		if (d.currentSize() == 0) {
+		if (d.isEmpty()) {
 			std::cout << "Resetting hand and deck\n";
 			d = hand;
 			hand.empty();
 		}
 		else {
 			std::cout << "Drawing 3\n";
-			while (count < 3 && d.currentSize() > 0) {
+			while (count < 3 && !d.isEmpty()) {
 				if (!hand.addCardtoFront(d.takeEndCard()))
 					std::cout << "Error drawing card\n";
 				count++;
 			}
 		}
-		std::cout << "Hand\n";
+		std::cout << "\tYour hand\n";
 		hand.displayDeck();
 		std::cout << "\n";
 	}
@@ -130,7 +139,9 @@ void play(std::string ps) {
 		else if (action == QUIT) { std::cout << "Leaving game\n"; return; }
 		else std::cout << "This should NOT print. Inside while loop in play function\n";
 
-		std::cout << "Next ieration inside play function\n";
+		displayGameState(d, hand, one, two, three, four, five, six, seven, spades, clubs, diamonds, hearts);
+
+		std::cout << "\nNext iteration inside play function\n";
 	}
 }
 
@@ -153,101 +164,221 @@ bool move(Deck &d, Deck &hand, Deck &one, Deck &two, Deck &three, Deck &four, De
 	Deck &spades, Deck &clubs, Deck &diamonds, Deck &hearts) {
 	std::cout << "Still have to check\n\n";
 
+	MoveChoice mc1, mc2;
 	std::string playerChoice1, playerChoice2;
 	Deck *choice1 = 0, *choice2 = 0;
 
 	bool madeamove = false;
 	while (!madeamove) {
 
-		//	FirstChoice
-		while (playerChoice1 != "r" && playerChoice1 != "R" && playerChoice1 != "1" && playerChoice1 != "2" && playerChoice1 != "3" &&
-			playerChoice1 != "4" && playerChoice1 != "5" && playerChoice1 != "6" && playerChoice1 != "7" && playerChoice1 != "11" &&
-			playerChoice1 != "12" && playerChoice1 != "13" && playerChoice1 != "14" && playerChoice1 != "q" && playerChoice1 != "Q") {
+		std::cout << "Making first choice\n";
 
-			std::cout << "What card would you like to move?\n(Enter r to go back, or 1-7 for bottom decks, or 11-14 for foundation decks" <<
-				", or q to quit)\n";
-			std::cin >> playerChoice1;
-			//	If the deck is empty, also continue
-			{
-				if (playerChoice1 == "1" && one.currentSize() == 0) playerChoice1 = "Z";
-				if (playerChoice1 == "2" && two.currentSize() == 0) playerChoice1 = "Z";
-				if (playerChoice1 == "3" && three.currentSize() == 0) playerChoice1 = "Z";
-				if (playerChoice1 == "4" && four.currentSize() == 0) playerChoice1 = "Z";
-				if (playerChoice1 == "5" && five.currentSize() == 0) playerChoice1 = "Z";
-				if (playerChoice1 == "6" && six.currentSize() == 0) playerChoice1 = "Z";
-				if (playerChoice1 == "7" && seven.currentSize() == 0) playerChoice1 = "Z";
-				if (playerChoice1 == "11" && spades.currentSize() == 0) playerChoice1 = "Z";
-				if (playerChoice1 == "12" && clubs.currentSize() == 0) playerChoice1 = "Z";
-				if (playerChoice1 == "13" && diamonds.currentSize() == 0) playerChoice1 = "Z";
-				if (playerChoice1 == "14" && hearts.currentSize() == 0) playerChoice1 = "Z";
-			}
+		//	FirstChoice + Setup
+		mc1 = move_firstChoice(one, two, three, four, five, six, seven, spades, clubs, diamonds, hearts);
+		if (mc1 == QUIT_MC) return false;
+		if (mc1 == MENU) return true;
+		if (mc1 == ONE) choice1 = &one; if (mc1 == TWO) choice1 = &two; if (mc1 == THREE) choice1 = &three;
+		if (mc1 == FOUR) choice1 = &four; if (mc1 == FIVE) choice1 = &five; if (mc1 == SIX) choice1 = &six;
+		if (mc1 == SEVEN) choice1 = &seven; 
+		if (mc1 == FOUNDATION1) choice1 = &spades; if (mc1 == FOUNDATION2) choice1 = &clubs; 
+		if (mc1 == FOUNDATION3) choice1 = &diamonds; if (mc1 == FOUNDATION4) choice1 = &hearts;
+
+		std::cout << "Making second choice\n";
+
+		//	Second Choice + Setup (Duplicate already checked for)
+		int foundation = 0;		// 0 for num, 1 for spade, 2 for club, 3 diamond, 4 heart
+		mc2 = move_secondChoice(one, two, three, four, five, six, seven, spades, clubs, diamonds, hearts, mc1);
+		if (mc2 == QUIT_MC) return false;
+		if (mc2 == MENU) return true;
+		if (mc2 == ONE) choice2 = &one; if (mc2 == TWO) choice2 = &two; if (mc2 == THREE) choice2 = &three;
+		if (mc2 == FOUR) choice2 = &four; if (mc2 == FIVE) choice2 = &five; if (mc2 == SIX) choice2 = &six;
+		if (mc2 == SEVEN) choice2 = &seven;
+		if (mc2 == FOUNDATION1) {
+			choice2 = &spades;
+			foundation = 1;
 		}
-		if (playerChoice1 == "q" || playerChoice1 == "Q") return false;			//	Quit
-		if (playerChoice1 == "r" || playerChoice1 == "R") return true;			//	Return without moving
-
-		while (playerChoice2 != "r" && playerChoice2 != "R" && playerChoice2 != "1" && playerChoice2 != "2" && playerChoice2 != "3" &&
-			playerChoice2 != "4" && playerChoice2 != "5" && playerChoice2 != "6" && playerChoice2 != "7" && playerChoice2 != "10" &&
-			playerChoice2 != "11" && playerChoice2 != "12" && playerChoice2 != "13" && playerChoice2 != "q" && playerChoice2 != "Q") {
-
-			std::cout << "Where would you like to move this card?\nEnter (r to go back, or 1-7 for bottom decks, or 11-14 for foundation " <<
-				"decks, or q to quit)\n";
-			std::cin >> playerChoice2;
+		if (mc2 == FOUNDATION2) {
+			choice2 = &clubs;
+			foundation = 2;
 		}
-		if (playerChoice2 == "q" || playerChoice2 == "Q") return false;
-		if (playerChoice2 == "r" || playerChoice2 == "R") return true;
-
-		/*
-			Foundation is used for checking the destination of the move
-			- 0 if not foundation
-			- 1 if spades
-			- 2 if clubs
-			- 3 if diamonds
-			- 4 if hearts
-		*/
-		int foundation = 0;
-		//	Store the corresponding decks in choice1 and choice2
-		{
-			if (playerChoice1 == "1") choice1 = &one;
-			else if (playerChoice1 == "2") choice1 = &two;
-			else if (playerChoice1 == "3") choice1 = &three;
-			else if (playerChoice1 == "4") choice1 = &four;
-			else if (playerChoice1 == "5") choice1 = &five;
-			else if (playerChoice1 == "6") choice1 = &six;
-			else if (playerChoice1 == "7") choice1 = &seven;
-			else if (playerChoice1 == "11") choice1 = &spades;
-			else if (playerChoice1 == "12") choice1 = &clubs;
-			else if (playerChoice1 == "13") choice1 = &diamonds;
-			else if (playerChoice1 == "14") choice1 = &hearts;
-			if (playerChoice2 == "1") choice2 = &one;
-			else if (playerChoice2 == "2") choice2 = &two;
-			else if (playerChoice2 == "3") choice2 = &three;
-			else if (playerChoice2 == "4") choice2 = &four;
-			else if (playerChoice2 == "5") choice2 = &five;
-			else if (playerChoice2 == "6") choice2 = &six;
-			else if (playerChoice2 == "7") choice2 = &seven;
-			else if (playerChoice2 == "11") {
-				choice2 = &spades;
-				foundation = 1;
-			}
-			else if (playerChoice2 == "12") {
-				choice2 = &clubs;
-				foundation = 2;
-			}
-			else if (playerChoice2 == "13") {
-				choice2 = &diamonds;
-				foundation = 3;
-			}
-			else if (playerChoice2 == "14") {
-				choice2 = &hearts;
-				foundation = 4;
-			}
+		if (mc2 == FOUNDATION3) {
+			choice2 = &diamonds;
+			foundation = 3;
+		}
+		if (mc2 == FOUNDATION4) {
+			choice2 = &hearts;
+			foundation = 4;
 		}
 
 		if (validMove(choice1, choice2, foundation)) {
+			std::cout << "Move is valid\n";
 			madeamove = true;
 		}
+		return true;
 	}
 	return true;
+}
+
+MoveChoice move_firstChoice(Deck one, Deck two, Deck three, Deck four, Deck five, Deck six, Deck seven, 
+	Deck spades, Deck clubs, Deck diamonds, Deck hearts) {
+	std::string response = "";
+	bool empty_deck = false;
+	while (1) {
+		empty_deck = false;
+
+		std::cout << "\nFrom which deck would you like to move:\n - 1. Bottom decks\n - 2. Foundation decks\n - 3. Return to menu\n";
+		std::cout << " - 4. Quit\n";
+		std::cin >> response;
+		while (response != "1" && response != "2" && response != "3" && response != "4") {
+			std::cout << "Invalid response. Please enter 1, 2, 3, or 4:\n";
+			std::cin >> response;
+		}
+		if (response == "3") return MENU;
+		if (response == "4") return QUIT_MC;
+		if (response == "1") {
+			std::cout << "\nFrom which of the bottom decks would you like to move:\n - 1. One\n - 2. Two\n - 3. Three\n - 4. Four\n";
+			std::cout << " - 5. Five\n - 6. Six\n - 7. Seven\n - 8. Go back to previous menu\n";
+			std::cin >> response;
+			while (response != "1" && response != "2" && response != "3" && response != "4" && response != "5" &&
+				response != "6" && response != "7" && response != "8") {
+				std::cout << "Invalid response. Please enter a number between 1 and 8:\n";
+				std::cin >> response;
+			}
+			if (response == "8") continue;
+			if (response == "1" && one.isEmpty()) empty_deck = true;
+			if (response == "2" && two.isEmpty()) empty_deck = true;
+			if (response == "3" && three.isEmpty()) empty_deck = true;
+			if (response == "4" && four.isEmpty()) empty_deck = true;
+			if (response == "5" && five.isEmpty()) empty_deck = true;
+			if (response == "6" && six.isEmpty()) empty_deck = true;
+			if (response == "7" && seven.isEmpty()) empty_deck = true;
+			if (empty_deck) {
+				std::cout << "Invalid move: deck is empty. Returning to previous menu\n";
+				continue;
+			}
+			if (response == "1") return ONE;
+			if (response == "2") return TWO;
+			if (response == "3") return THREE;
+			if (response == "4") return FOUR;
+			if (response == "5") return FIVE;
+			if (response == "6") return SIX;
+			if (response == "7") return SEVEN;
+		}
+		if (response == "2") {
+			std::cout << "\nFrom which of the foundation decks would you like to move:\n - 1. Spades\n - 2. Clubs\n";
+			std::cout << " - 3. Diamonds\n - 4. Hearts\n - 5. Go back to previous menu\n";
+			std::cin >> response;
+			while (response != "1" && response != "2" && response != "3" && response != "4" && response != "5") {
+				std::cout << "Invalid response. Please enter a number between 1 and 5:\n";
+				std::cin >> response;
+			}
+			if (response == "5") continue;
+			if (response == "1" && spades.isEmpty()) empty_deck = true;
+			if (response == "2" && clubs.isEmpty()) empty_deck = true;
+			if (response == "3" && diamonds.isEmpty()) empty_deck = true;
+			if (response == "4" && hearts.isEmpty()) empty_deck = true;
+			if (empty_deck) {
+				std::cout << "Invalid move: deck is empty. Returning to previous menu\n";
+				continue;
+			}
+			if (response == "1") return FOUNDATION1;
+			if (response == "2") return FOUNDATION2;
+			if (response == "3") return FOUNDATION3;
+			if (response == "4") return FOUNDATION4;
+		}
+	}
+}
+
+MoveChoice move_secondChoice(Deck one, Deck two, Deck three, Deck four, Deck five, Deck six, Deck seven,
+	Deck spades, Deck clubs, Deck diamonds, Deck hearts, MoveChoice mc1) {
+	std::string response = "";
+	MoveChoice temp;
+	while (1) {
+		std::cout << "From which deck would you like to move:\n - 1. Bottom decks\n - 2. Foundation decks\n - 3. Return to menu\n";
+		std::cout << " - 4. Quit\n";
+		std::cin >> response;
+		while (response != "1" && response != "2" && response != "3" && response != "4") {
+			std::cout << "Invalid response. Please enter 1, 2, 3, or 4:\n";
+			std::cin >> response;
+		}
+		if (response == "3") return MENU;
+		if (response == "4") return QUIT_MC;
+		if (response == "1") {
+			std::cout << "From which of the bottom decks would you like to move:\n - 1. One\n - 2. Two\n - 3. Three\n - 4. Four\n";
+			std::cout << " - 5. Five\n - 6. Six\n - 7. Seven\n - 8. Go back to previous menu\n";
+			std::cin >> response;
+			while (response != "1" && response != "2" && response != "3" && response != "4" && response != "5" &&
+				response != "6" && response != "7" && response != "8") {
+				std::cout << "Invalid response. Please enter a number between 1 and 8:\n";
+				std::cin >> response;
+			}
+			if (response == "8") continue;
+			temp = is_equalMoveChoices(mc1, response);
+			if (temp == INVALID) continue;
+			return temp;
+		}
+		if (response == "2") {
+			std::cout << "From which of the foundation decks would you like to move:\n - 1. Spades\n - 2. Clubs\n";
+			std::cout << " - 3. Diamonds\n - 4. Hearts\n - 5. Go back to previous menu\n";
+			std::cin >> response;
+			while (response != "1" && response != "2" && response != "3" && response != "4" && response != "5") {
+				std::cout << "Invalid response. Please enter a number between 1 and 5:\n";
+				std::cin >> response;
+			}
+			if (response == "5") continue;
+			temp = is_equalMoveChoices(mc1, "1" + response);
+			if (temp == INVALID) continue;
+			return temp;
+		}
+	}
+}
+
+MoveChoice is_equalMoveChoices(MoveChoice mc1, std::string response) {
+	if (response == "1") {
+		if (mc1 == ONE) return INVALID;
+		else return ONE;
+	}
+	if (response == "2") {
+		if (mc1 == TWO) return INVALID;
+		else return TWO;
+	}
+	if (response == "3") {
+		if (mc1 == THREE) return INVALID;
+		else return THREE;
+	}
+	if (response == "4") {
+		if (mc1 == FOUR) return INVALID;
+		else return FOUR;
+	}
+	if (response == "5") {
+		if (mc1 == FIVE) return INVALID;
+		else return FIVE;
+	}
+	if (response == "6") {
+		if (mc1 == SIX) return INVALID;
+		else return SIX;
+	}
+	if (response == "7") {
+		if (mc1 == SEVEN) return INVALID;
+		else return SEVEN;
+	}
+	if (response == "11") {
+		if (mc1 == FOUNDATION1) return INVALID;
+		else return FOUNDATION1;
+	}
+	if (response == "12") {
+		if (mc1 == FOUNDATION2) return INVALID;
+		else return FOUNDATION2;
+	}
+	if (response == "13") {
+		if (mc1 == FOUNDATION3) return INVALID;
+		else return FOUNDATION3;
+	}
+	if (response == "14") {
+		if (mc1 == FOUNDATION4) return INVALID;
+		else return FOUNDATION4;
+	}
+	std::cout << "This should not be reached in is_equalMoveChoices function\n"; return INVALID;
 }
 
 /*
@@ -323,36 +454,48 @@ bool validMove(Deck* choice1, Deck* choice2, int foundation) {
 void displayGameState(Deck d, Deck hand, Deck one, Deck two, Deck three, Deck four, Deck five, Deck six, Deck seven,
 	Deck spades, Deck clubs, Deck diamonds, Deck hearts) {
 
-	std::cout << "Deck\t\thand\t\t\tSpades\tClubs\tDiamonds\tHearts\n";
-	if (d.currentSize() > 0) std::cout << d.checkCard(0) << "\t";
-	else std::cout << "\t\t";
-	if (hand.currentSize() > 0) std::cout << hand.checkCard(0) << "\t";
-	else std::cout << "\t\t";
-	if (spades.currentSize() > 0) std::cout << spades.checkCard(0) << "\t";
-	else std::cout << "\t\t";
-	if (clubs.currentSize() > 0) std::cout << clubs.checkCard(0) << "\t";
-	else std::cout << "\t\t";
-	if (diamonds.currentSize() > 0) std::cout << diamonds.checkCard(0) << "\t";
-	else std::cout << "\t\t";
-	if (hearts.currentSize() > 0) std::cout << hearts.checkCard(0) << "\t";
-	else std::cout << "\t\t";
+	std::cout << "Deck\tHand\t\t\t\tSpades\tClubs\tDiamonds\tHearts\n";
+	std::cout << d.currentSize() << "\t";
+
+	if (!hand.isEmpty()) hand.checkCard(0).shortDisplay();
+	
+	std::cout << "\t\t\t\t";
+	if (!spades.isEmpty()) spades.checkCard(0).shortDisplay();
+
+	std::cout << "\t";
+	if (!clubs.isEmpty()) clubs.checkCard(0).shortDisplay();
+
+	std::cout << "\t";
+	if (!diamonds.isEmpty()) diamonds.checkCard(0).shortDisplay();
+
+	std::cout << "\t";
+	if (!hearts.isEmpty()) hearts.checkCard(0).shortDisplay();
+
 
 	std::cout << "\n\n";
-	std::cout << "One\t\tTwo\t\tThree\t\tFour\t\tFive\t\tSix\t\tSeven\n";
-	if (one.currentSize() > 0) std::cout << one.checkCard(0) << "\t\t";
-	else std::cout << "\t\t";
-	if (two.currentSize() > 0) std::cout << two.checkCard(0) << "\t";
-	else std::cout << "\t\t";
-	if (three.currentSize() > 0) std::cout << three.checkCard(0) << "\t";
-	else std::cout << "\t\t";
-	if (four.currentSize() > 0) std::cout << four.checkCard(0) << "\t";
-	else std::cout << "\t\t";
-	if (five.currentSize() > 0) std::cout << five.checkCard(0) << "\t";
-	else std::cout << "\t\t";
-	if (six.currentSize() > 0) std::cout << six.checkCard(0) << "\t";
-	else std::cout << "\t\t";
-	if (seven.currentSize() > 0) std::cout << seven.checkCard(0) << "\t";
-	else std::cout << "\t\t";
+	std::cout << "One\tTwo\tThree\tFour\tFive\tSix\tSeven\n";
+	
+	if (!one.isEmpty()) one.checkCard(0).shortDisplay();
+
+	std::cout << "\t";
+	if (!two.isEmpty()) two.checkCard(0).shortDisplay();
+
+	std::cout << "\t";
+	if (!three.isEmpty()) three.checkCard(0).shortDisplay();
+
+	std::cout << "\t";
+	if (!four.isEmpty()) four.checkCard(0).shortDisplay();
+	
+	std::cout << "\t";
+	if (!five.isEmpty()) five.checkCard(0).shortDisplay();
+
+	std::cout << "\t";
+	if (!six.isEmpty()) six.checkCard(0).shortDisplay();
+
+	std::cout << "\t";
+	if (!seven.isEmpty()) seven.checkCard(0).shortDisplay();
+	
+	std::cout << "\n\n";
 }
 
 void prepGame(Deck& d, Deck& one, Deck& two, Deck& three, Deck& four, Deck& five, Deck& six, Deck& seven,
