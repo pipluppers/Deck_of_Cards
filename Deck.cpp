@@ -12,22 +12,13 @@ std::ostream& operator<<(std::ostream& out, const Card& c) {
 	else if (c.suit == HEART) out << "Heart ";
 	else out << "Wild Card ";
 
-	if (c.num == 1) out << "Ace\n";
-	else if (c.num == 11) out << "Jack\n";
-	else if (c.num == 12) out << "Queen\n";
-	else if (c.num == 13) out << "King\n";
-	else if (c.num == 14) out << "Joker\n";
+	if (c.num == 1) out << "Ace";
+	else if (c.num == 11) out << "Jack";
+	else if (c.num == 12) out << "Queen";
+	else if (c.num == 13) out << "King";
+	else if (c.num == 14) out << "Joker";
 	else out << c.num;
 
-	return out;
-}
-
-//	Does output a newline at the end
-std::ostream& operator<<(std::ostream& out, const Deck& d) {
-	int i;
-	for (i = 0; i < d.current_size; ++i) {
-		out << d.deck[i] << std::endl;
-	}
 	return out;
 }
 
@@ -98,11 +89,11 @@ void Deck::incrementCurrentSize(int num) { this->current_size += num; }
 void Deck::incrementSize(int num) { this->size += num; }
 
 void Deck::displayDeck() const {
-	std::cout << "----------\n" <<  "Deck" << "\n";
+	std::cout << "---------------\n";
 	for (int i = 0; i < this->current_size; ++i) {
 		std::cout << i + 1 << ". " << this->deck[i] << "\n";
 	}
-	std::cout << "----------\n" << std::endl;
+	std::cout << "---------------\n";
 }
 
 void Deck::shuffle(int num) {
