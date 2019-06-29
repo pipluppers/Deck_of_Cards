@@ -1,62 +1,70 @@
-#include "Deck.h"
+//	Property of Alex Nguyen (nguyenalex24@gmail.com)
 
 /*
 	TODO
-	Fix the functionality for drawing a single card
+		Hideous UI
+		Refactor move function
 */
 
-std::string playornotplay();
+#include "Deck.h"
+
+typedef int UserAction;
+constexpr UserAction DRAW = 0, MOVE = 1, QUIT = 2;
+
+bool playAgame();
 std::string fetchplaystyle();		//	Draw 1 or 3 cards at a time
+bool gameOver(Deck&, Deck&, Deck&, Deck&);
 void draw(Deck&, Deck&, std::string); //	Returns the current hand (which is essentially a stack)
 void play(std::string);
+void prepGame(Deck&, Deck&, Deck&, Deck&, Deck&, Deck&, Deck&, Deck&, Deck&, Deck&, Deck&, Deck&);
+UserAction userAction();
 bool move(Deck&, Deck&, Deck&, Deck&, Deck&, Deck&, Deck&, Deck&, Deck&, Deck&, Deck&, Deck&, Deck&);
 bool validMove(Deck*, Deck*, int);	//	The integer is used to determine dest (foundation or not)	
+
+//	This UI is currently super ugly
 void displayGameState(Deck, Deck, Deck, Deck, Deck, Deck, Deck, Deck, Deck, Deck, Deck, Deck, Deck);
 
 
 
 void Solitaire() {
-	std::string toplay = playornotplay();
-	if (toplay == "n" || toplay == "N") {
-		std::cout << "Exiting Solitaire\n";
-		return;
-	}
-	
-	std::string playstyle = fetchplaystyle();
-	
-	play(playstyle);
+	while (1) {
+		if (!playAgame()) {
+			std::cout << "Exiting Solitaire. Bye friend\n";
+			return;
+		}
+		std::string playstyle = fetchplaystyle();
 
-	std::cout << "Good game! Want to play another?\n";
-	toplay = playornotplay();
-	while (toplay == "y" || toplay == "Y") {
-		playstyle = fetchplaystyle();
 		play(playstyle);
+
+		std::cout << "Good game! Want to play another?\n";
 	}
-	std::cout << "Exiting Solitaire\n";
-	return;
-	
 }
 
-std::string playornotplay() {
+bool playAgame() {
 	std::string ch;
-	std::cout << "Ready to play Solitaire? (y/n)\n";
+	std::cout << "Ready to play Solitaire?\n - 1: Yes\n - 2: No\n";
 	std::cin >> ch;
-	while (ch != "y" && ch != "n" && ch != "Y" && ch != "N") {
-		std::cout << "Invalid response. Please enter y or n: ";
+	while (ch != "1" && ch != "2") {
+		std::cout << "Invalid response. Please enter 1 or 2: ";
 		std::cin >> ch;
 	}
-	return ch;
+	return (ch == "y" || ch == "Y");
 }
 
 std::string fetchplaystyle() {
 	std::string ps;
-	std::cout << "Do you want to play drawing 3 cards or 1 card?\n";
+	std::cout << "How many cards do you want to draw at a time?\n - 1: 1\n - 2: 3\n";
 	std::cin >> ps;
-	while (ps != "3" && ps != "1") {
-		std::cout << "Invalid response. Please enter 3 or 1: ";
+	while (ps != "1" && ps != "2") {
+		std::cout << "Invalid response. Please enter 1 or 2: ";
 		std::cin >> ps;
 	}
 	return ps;
+}
+
+bool gameOver(Deck& spades, Deck& clubs, Deck& diamonds, Deck& hearts) {
+	return !(spades.currentSize() < 13 && clubs.currentSize() < 13 && 
+		diamonds.currentSize() < 13 && hearts.currentSize() < 13);
 }
 
 void draw(Deck &d, Deck &hand, std::string playstyle) {
@@ -71,13 +79,10 @@ void draw(Deck &d, Deck &hand, std::string playstyle) {
 		}
 		//	Reset
 		else {
-			if (hand.addCardtoFront(d.takeEndCard())) {
-				std::cout << "Error adding card to hand or taking from deck\n";
-			}
+			if (!hand.addCardtoFront(d.takeEndCard()))
+				std::cout << "Error drawing card\n";
 		}
-		std::cout << "Hand:\n";
-		hand.displayDeck();
-		std::cout << "\n";
+		std::cout << "Hand:\n" << hand << std::endl;
 	}
 	else {
 		int count = 0;
@@ -90,9 +95,8 @@ void draw(Deck &d, Deck &hand, std::string playstyle) {
 		else {
 			std::cout << "Drawing 3\n";
 			while (count < 3 && d.currentSize() > 0) {
-				if (!hand.addCardtoFront(d.takeEndCard())) {
-					std::cout << "Error adding card to front of hand or taking from deck\n";
-				}
+				if (!hand.addCardtoFront(d.takeEndCard()))
+					std::cout << "Error drawing card\n";
 				count++;
 			}
 		}
@@ -104,54 +108,44 @@ void draw(Deck &d, Deck &hand, std::string playstyle) {
 
 void play(std::string ps) {
 	Deck spades(13), clubs(13), diamonds(13), hearts(13);
-	Deck one(15), two(17), three(20), four(20), five(20), six(20), seven(25);
-	Deck hand;
-	hand.empty();
-	Deck d;
-	d.shuffle(1000);
+	Deck one(15), two(17), three(20), four(20), five(20), six(20), seven(52);
+	Deck hand, d;
+	hand.empty(); d.shuffle(2000);
 	int i = 0;
+	UserAction action;
 
-	spades.empty();	clubs.empty(); diamonds.empty(); hearts.empty();	// Change all current sizes to 0
-	one.empty(); two.empty(); three.empty(); four.empty(); five.empty(); six.empty(); seven.empty();
-	one.addCardtoFront(d.takeEndCard());
-	two.addCardtoFront(d.takeEndCard()); two.addCardtoFront(d.takeEndCard());
-	for (i = 0; i < 3; ++i) three.addCardtoFront(d.takeEndCard());
-	for (i = 0; i < 4; ++i) four.addCardtoFront(d.takeEndCard());
-	for (i = 0; i < 5; ++i) five.addCardtoFront(d.takeEndCard());
-	for (i = 0; i < 6; ++i) six.addCardtoFront(d.takeEndCard());
-	for (i = 0; i < 7; ++i) seven.addCardtoFront(d.takeEndCard());
-
-	bool playon = true;
-	std::string action;
-
+	prepGame(d, one, two, three, four, five, six, seven, spades, clubs, diamonds, hearts);
 	displayGameState(d, hand, one, two, three, four, five, six, seven, spades, clubs, diamonds, hearts);
 
-	while (spades.currentSize() < 13 && clubs.currentSize() < 13 &&
-		diamonds.currentSize() < 13 && hearts.currentSize() < 13) {
+	while (!gameOver(spades, clubs, diamonds, hearts)) {
 		
-		std::cout << "What would you like to do?\n - Draw from deck (d)\n - Move (m)\n - Quit (q)\n";
-		std::cin >> action;
-		while (action != "D" && action != "d" && action != "m" && action != "M" && action != "Q" && action != "q") {
-			std::cout << "Invalid response. Please enter d or m: ";
-			std::cin >> action;
-		}
-		if (action == "Q" || action == "q") {
-			std::cout << "Leaving game\n";
-			return;
-		}
-		else if (action == "d" || action == "D") {
-			draw(d, hand, ps);
-		}
-		else {
-			playon = move(d, hand, one, two, three, four, five, six, seven, spades, clubs, diamonds, hearts);
-			if (playon == false) {
+		action = userAction();
+		if (action == DRAW) draw(d, hand, ps);
+		else if (action == MOVE) {
+			if (!move(d, hand, one, two, three, four, five, six, seven, spades, clubs, diamonds, hearts)) {
 				std::cout << "Leaving game\n";
 				return;
 			}
 		}
+		else if (action == QUIT) { std::cout << "Leaving game\n"; return; }
+		else std::cout << "This should NOT print. Inside while loop in play function\n";
 
 		std::cout << "Next ieration inside play function\n";
 	}
+}
+
+UserAction userAction() {
+	std::string action;
+
+	std::cout << "What would you like to do?\n - 1: Draw from deck (d)\n - 2: Move (m)\n - 3: Quit (q)\n";
+	std::cin >> action;
+	while (action != "1" && action != "2" && action != "3") {
+		std::cout << "Invalid option. Please enter 1, 2, or 3:\n";
+		std::cin >> action;
+	}
+	if (action == "1") return DRAW;
+	else if (action == "2") return MOVE;
+	else return QUIT;
 }
 
 //	d stands for deck, 1-7 stands for bottom decks, 10-13 stands for goal decks, q for quit
@@ -359,4 +353,19 @@ void displayGameState(Deck d, Deck hand, Deck one, Deck two, Deck three, Deck fo
 	else std::cout << "\t\t";
 	if (seven.currentSize() > 0) std::cout << seven.checkCard(0) << "\t";
 	else std::cout << "\t\t";
+}
+
+void prepGame(Deck& d, Deck& one, Deck& two, Deck& three, Deck& four, Deck& five, Deck& six, Deck& seven,
+	Deck& spades, Deck& clubs, Deck& diamonds, Deck& hearts) {
+	int i = 0;
+	one.empty(); two.empty(); three.empty(); four.empty(); five.empty(); six.empty(); seven.empty();
+	one.addCardtoFront(d.takeEndCard());
+	two.addCardtoFront(d.takeEndCard()); two.addCardtoFront(d.takeEndCard());
+	for (i = 0; i < 3; ++i) three.addCardtoFront(d.takeEndCard());
+	for (i = 0; i < 4; ++i) four.addCardtoFront(d.takeEndCard());
+	for (i = 0; i < 5; ++i) five.addCardtoFront(d.takeEndCard());
+	for (i = 0; i < 6; ++i) six.addCardtoFront(d.takeEndCard());
+	for (i = 0; i < 7; ++i) seven.addCardtoFront(d.takeEndCard());
+
+	spades.empty(); clubs.empty(); diamonds.empty(); hearts.empty();
 }
