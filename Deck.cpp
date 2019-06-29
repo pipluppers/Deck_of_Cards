@@ -2,6 +2,32 @@
 
 #include "Deck.h"
 
+void Card::shortDisplay() const {
+	if (this->suit == SPADE) std::cout << "S-";
+	else if (this->suit == CLUB) std::cout << "C-";
+	else if (this->suit == DIAMOND) std::cout << "D-";
+	else std::cout << "H-";
+	if (this->num == 1) std::cout << "A";
+	else if (this->num == 11) std::cout << "J";
+	else if (this->num == 12) std::cout << "Q";
+	else if (this->num == 13) std::cout << "K";
+	else if (this->num == 14) std::cout << "Joker";
+	else std::cout << this->num;
+}
+
+void Card::cardDisplay() const {
+	std::string suity;
+	if (this->suit == SPADE) suity = "S";
+	else if (this->suit == CLUB) suity = "C";
+	else if (this->suit == DIAMOND) suity = "D";
+	else if (this->suit == HEART) suity = "H";
+
+	std::cout << " _____\n";
+	std::cout << "|" << suity << "    |\n";
+	std::cout << "|  " << this->num << "  |\n";
+	std::cout << "|____" << suity << "|\n";
+}
+
 //	Does NOT output a newline at the end
 std::ostream& operator<<(std::ostream& out, const Card& c) {
 	assert(c.num >= 1);			// No negative cards
@@ -95,6 +121,8 @@ void Deck::displayDeck() const {
 	}
 	std::cout << "---------------\n";
 }
+
+bool Deck::isEmpty() const { return this->current_size == 0; }
 
 void Deck::shuffle(int num) {
 	if (this->current_size == 0) return;
