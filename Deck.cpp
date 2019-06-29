@@ -1,21 +1,23 @@
+//	Property of Alex Nguyen (nguyenalex24@gmail.com)
+
 #include "Deck.h"
 
 //	Does NOT output a newline at the end
 std::ostream& operator<<(std::ostream& out, const Card& c) {
-	assert(c.num >= 0);			// No negative cards
+	assert(c.num >= 1);			// No negative cards
 
-	if (c.suit == 0) out << "Spade ";
-	else if (c.suit == 1) out << "Club ";
-	else if (c.suit == 2) out << "Diamond ";
-	else if (c.suit == 3) out << "Heart ";
+	if (c.suit == SPADE) out << "Spade ";
+	else if (c.suit == CLUB) out << "Club ";
+	else if (c.suit == DIAMOND) out << "Diamond ";
+	else if (c.suit == HEART) out << "Heart ";
 	else out << "Wild Card ";
 
-	if (c.num == 0) out << "Ace\n";
-	else if (c.num == 10) out << "Jack\n";
-	else if (c.num == 11) out << "Queen\n";
-	else if (c.num == 12) out << "King\n";
-	else if (c.num == 13) out << "Joker\n";
-	else out << c.num + 1;
+	if (c.num == 1) out << "Ace\n";
+	else if (c.num == 11) out << "Jack\n";
+	else if (c.num == 12) out << "Queen\n";
+	else if (c.num == 13) out << "King\n";
+	else if (c.num == 14) out << "Joker\n";
+	else out << c.num;
 
 	return out;
 }
@@ -31,12 +33,12 @@ std::ostream& operator<<(std::ostream& out, const Deck& d) {
 
 //	Default constructor
 Deck::Deck() {
-	int i = 0; Suit j = spade;
+	int i = 1; Suit j = SPADE;
 	this->size = 52, this->current_size = 52;
 	deck = new Card[52];
-	for (; i < 13; ++i) {
+	for (; i < 14; ++i) {
 		for (j = 0; j < 4; ++j) {
-			deck[i * 4 + j] = Card(i, j);
+			deck[(i-1) * 4 + j] = Card(i, j);
 		}
 	}
 }
@@ -46,11 +48,11 @@ Deck::Deck(int size) {
 	this->size = size;
 	this->current_size = size;
 	deck = new Card[size];
-	int i = 0, j = 0;
-	while (i * 4 + j < size) {							//	While loop is for sizes above 52
-		for (; i < 13 && i*4 + j < size; ++i) {			//	This loop is for the numbers
+	int i = 1; Suit j = SPADE;
+	while ((i-1) * 4 + j < size) {							//	While loop is for sizes above 52
+		for (; i < 14 && (i-1)*4 + j < size; ++i) {			//	This loop is for the numbers
 			for (j = 0; j < 4 && i*4+j < size; ++j) {	//	This loop is for the suits
-				deck[i * 4 + j] = Card(i, j);
+				deck[(i-1) * 4 + j] = Card(i, j);
 			}
 		}
 	}
@@ -87,36 +89,37 @@ Deck& Deck::operator=(const Deck& d) {
 
 
 
-
-
 //	---------------	Functions	--------------------------------
 
-int Deck::currentSize() const {
-	return this->current_size;
-}
+int Deck::currentSize() const { return this->current_size; }
+
+void Deck::incrementCurrentSize(int num) { this->current_size += num; }
+
+void Deck::incrementSize(int num) { this->size += num; }
 
 void Deck::displayDeck() const {
-	std::cout << "----------" << std::endl <<  "Deck" << std::endl;
-	int i = 0;
-	for (; i < this->current_size; ++i) {
-		std::cout << i + 1 << ". " << this->deck[i] << std::endl;
+	std::cout << "----------\n" <<  "Deck" << "\n";
+	for (int i = 0; i < this->current_size; ++i) {
+		std::cout << i + 1 << ". " << this->deck[i] << "\n";
 	}
-	std::cout << "----------" << std::endl << std::endl;
+	std::cout << "----------\n" << std::endl;
 }
 
 void Deck::shuffle(int num) {
-	int begin, begin_temp, end, stop, i, j;
+	if (this->current_size == 0) return;
+	
+	int begin, begin_temp, numShuffle, end, i, j;
 	Card* tempDeck = new Card[this->current_size];
 	while (num > 0) {
 		i = 0, j = 0;		// Used for tempDeck and regular deck
 		begin = rand() % this->current_size;
 		begin_temp = begin;
-		end = rand() % (this->current_size - begin);
-		assert(begin + end < this->current_size);
-		stop = begin + end;
+		numShuffle = rand() % (this->current_size - begin);
+		end = begin + numShuffle;
+		assert(end < this->current_size);
 
 		//	Actual Shuffling
-		while (begin <= stop) {
+		while (begin <= end) {
 			tempDeck[i] = this->deck[begin];
 			++begin; ++i;
 		}
@@ -124,17 +127,16 @@ void Deck::shuffle(int num) {
 			tempDeck[i] = this->deck[j];
 			++i; ++j;
 		}
-		stop++;
-		while (stop < this->current_size) {
-			tempDeck[i] = this->deck[stop];
+		end++;
+		while (end < this->current_size) {
+			tempDeck[i] = this->deck[end];
 			assert(i < this->current_size);			//	Blocks out-of-bounds access
-			++i; ++stop;
+			++i; ++end;
 		}
 
 		// Copy over
-		for (i = 0; i < this->current_size; ++i) {
+		for (i = 0; i < this->current_size; ++i) 
 			this->deck[i] = tempDeck[i];
-		}
 		--num;
 	}
 	delete[] tempDeck;
@@ -167,11 +169,12 @@ Card Deck::checkCard(int index) const {
 */
 Card Deck::takeCard(int index) {
 	assert(index >= 0 && index < this->current_size);
+	assert(this->current_size != 0);
 	Card temp = this->deck[index];
 	for (; index < this->current_size - 1; ++index) {
 		this->deck[index] = this->deck[index + 1];
 	}
-	--this->current_size;
+	this->incrementCurrentSize(-1);
 	return temp;
 }
 
@@ -212,7 +215,7 @@ bool Deck::addCard(Card c, int index) {
 		}
 		if (this->deck != 0) delete[] this->deck;
 		this->deck = tempDeck;
-		++this->size;
+		this->incrementSize();
 	}
 	else {
 		int i = this->current_size;
@@ -222,7 +225,7 @@ bool Deck::addCard(Card c, int index) {
 		}
 		this->deck[i] = c;
 	}
-	++this->current_size;
+	this->incrementCurrentSize();
 	return true;
 }
 
@@ -234,25 +237,21 @@ bool Deck::addCardtoFront(Card c) {
 	return addCard(c, 0);
 }
 
-void Deck::fullempty() {
-	this->size = 0;
-	this->current_size = 0;
-}
+void Deck::fullempty() { this->size = 0; this->current_size = 0; }
 
-void Deck::empty() {
-	this->current_size = 0;
-}
+void Deck::empty() { this->current_size = 0; }
 
 void Deck::reset() {
 	std::cout << "Starting with a fresh 52-card deck\n";
+
 	this->size = 52;
 	this->current_size = 52;
-	int i = 0, j = 0;
-	if (this->deck != 0) delete[] deck;
-	deck = new Card[52];
-	for (; i < 13; ++i) {
+	int i = 1; Suit j = 0;
+	if (this->deck != 0) delete[] this->deck;
+	this->deck = new Card[52];
+	for (; i < 14; ++i) {
 		for (j = 0; j < 4; ++j) {
-			deck[i * 4 + j] = Card(i, j);
+			this->deck[(i-1) * 4 + j] = Card(i, j);
 		}
 	}
 }
