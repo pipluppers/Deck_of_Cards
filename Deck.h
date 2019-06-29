@@ -14,6 +14,8 @@ struct Card {
 	Suit suit;	// Spade 0, Club 1, Diamond 2, Heart 3
 	Card() : num(0), suit(SPADE) {}
 	Card(int num, Suit suit) : num(num), suit(suit) {}
+	void shortDisplay() const;
+	void cardDisplay() const;
 	friend std::ostream& operator<<(std::ostream&, const Card&);
 };
 
@@ -30,6 +32,7 @@ public:
 	void incrementCurrentSize(int = 1);
 	void incrementSize(int = 1);
 	void displayDeck() const;
+	bool isEmpty() const;
 
 	//	Checking/Removing Card
 	Card checkCard(int) const;
