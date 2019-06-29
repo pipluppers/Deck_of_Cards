@@ -25,20 +25,11 @@ public:
 	Deck& operator=(const Deck&);	// Copy assignment
 	~Deck();
 
+	//	Data Members
 	int currentSize() const;
 	void incrementCurrentSize(int = 1);
 	void incrementSize(int = 1);
 	void displayDeck() const;
-	/*
-	O(2*size) space
-	Input:
-		- Number of times to shuffle
-		- If no number is inputted, shuffle 1000 times
-	Process:
-		- Pull random numbers a and b
-		- Move everything from a to b inclusive to the front
-	*/
-	void shuffle(int = 1000);
 
 	//	Checking/Removing Card
 	Card checkCard(int) const;
@@ -51,6 +42,8 @@ public:
 	bool addCardtoEnd(Card);
 	bool addCardtoFront(Card);
 
+	//	Deck Manipulation
+	void shuffle(int = 1000);			// O(2 * size) space
 	void fullempty();					// Change the size and current size to 0
 	void empty();						// Change only the current size to 0
 	void reset();						// Start with a fresh 52-card deck
